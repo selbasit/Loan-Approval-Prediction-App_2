@@ -4,12 +4,9 @@ import pandas as pd
 import numpy as np
 import pickle
 
-# Load model and column transformer
-with open("loan_model.pkl", "rb") as f:
-    model = pickle.load(f)
-
-with open("column_transformer.pkl", "rb") as f:
-    transformer = pickle.load(f)
+# Load the full pipeline (preprocessing + model)
+with open("loan_pipeline.pkl", "rb") as f:
+    pipeline = pickle.load(f)
 
 # Title
 st.title("🏦 Loan Approval Prediction App")
@@ -27,7 +24,7 @@ loan_grade = st.selectbox("Loan Grade", ["A", "B", "C", "D", "E", "F", "G"])
 credit_hist_length = st.number_input("Credit History Length (years)", min_value=0, value=5)
 default_on_file = st.selectbox("Default on File", ["Y", "N"])
 
-# Prepare raw input
+# Prepare input data
 loan_percent_income = loan_amount / income
 input_data = {
     "person_age": age,
@@ -45,18 +42,16 @@ input_data = {
 
 input_df = pd.DataFrame([input_data])
 
-# Predict and display result
+# Prediction
 if st.button("Predict"):
     try:
-        transformed_input = transformer.transform(input_df)
-        prediction = model.predict(transformed_input)[0]
-
+        prediction = pipeline.predict(input_df)[0]
         if prediction == 1:
             st.success("✅ Loan Approved")
         else:
             st.error("❌ Loan Denied")
 
-        # Downloadable result
+        # Allow download
         result_df = input_df.copy()
         result_df["prediction"] = "Approved" if prediction == 1 else "Denied"
         csv = result_df.to_csv(index=False).encode('utf-8')
