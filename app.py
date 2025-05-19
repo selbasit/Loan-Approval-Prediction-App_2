@@ -27,6 +27,7 @@ default_on_file = st.selectbox("Default on File", ["Y", "N"])
 # Prepare input data
 loan_percent_income = loan_amount / income
 input_data = {
+    "id": 0,  # Dummy ID to satisfy pipeline
     "person_age": age,
     "person_income": income,
     "person_home_ownership": home_ownership,
