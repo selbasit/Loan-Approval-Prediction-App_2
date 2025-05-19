@@ -1,18 +1,17 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
 
-# Load the full pipeline (preprocessing + model)
+# Load the full pipeline (includes preprocessing + model)
 with open("loan_pipeline.pkl", "rb") as f:
     pipeline = pickle.load(f)
 
-# Title
+# App Title
 st.title("🏦 Loan Approval Prediction App")
 st.write("Provide applicant and loan details to predict loan approval status.")
 
-# User Inputs
+# Input Fields
 age = st.number_input("Applicant Age", min_value=18, max_value=100, value=30)
 income = st.number_input("Annual Income (USD)", min_value=1000, value=50000)
 emp_length = st.number_input("Employment Length (years)", min_value=0, value=5)
@@ -24,10 +23,12 @@ loan_grade = st.selectbox("Loan Grade", ["A", "B", "C", "D", "E", "F", "G"])
 credit_hist_length = st.number_input("Credit History Length (years)", min_value=0, value=5)
 default_on_file = st.selectbox("Default on File", ["Y", "N"])
 
-# Prepare input data
+# Derived feature
 loan_percent_income = loan_amount / income
+
+# 🔧 Build input with the exact same columns as training
 input_data = {
-    "id": 0,  # Dummy ID to satisfy pipeline
+    "id": 0,  # Required dummy column
     "person_age": age,
     "person_income": income,
     "person_home_ownership": home_ownership,
@@ -52,10 +53,11 @@ if st.button("Predict"):
         else:
             st.error("❌ Loan Denied")
 
-        # Allow download
+        # Download button
         result_df = input_df.copy()
         result_df["prediction"] = "Approved" if prediction == 1 else "Denied"
         csv = result_df.to_csv(index=False).encode('utf-8')
-        st.download_button("Download Prediction Result", data=csv, file_name="loan_prediction_result.csv", mime="text/csv")
+        st.download_button("Download Result", csv, "loan_prediction.csv", "text/csv")
+
     except Exception as e:
         st.error(f"Prediction failed: {e}")
